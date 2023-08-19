@@ -47,6 +47,8 @@ services:
       ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
       PHP_TZ: ${PHP_TZ}
       TZ: ${TZ}
+    depends_on:
+      - mysql
     restart: unless-stopped
     networks:
       monitoring_network:
@@ -56,6 +58,7 @@ services:
     image: zabbix/zabbix-server-mysql:trunk-ubuntu
     container_name: zabbix-server-mysql
     ports:
+      - '10050:10050'
       - '10051:10051'
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
@@ -68,28 +71,30 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       ZBX_ENABLE_SNMP_TRAPS: ${ZBX_ENABLE_SNMP_TRAPS}
       TZ: ${TZ}
+    depends_on:
+      - mysql      
     restart: unless-stopped
     networks:
       monitoring_network:
         ipv4_address: 172.28.0.15
 
-  zabbix-agent:
-    image: zabbix/zabbix-agent:trunk-ubuntu
-    container_name: zabbix-agent
-    ports:
-      - '10050:10050'
-    volumes:
-      - "/etc/localtime:/etc/localtime:ro"
-      - "/etc/timezone:/etc/timezone:ro"
-    env_file:
-      - .env
-    environment:
-      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
-      TZ: ${TZ}
-    restart: unless-stopped
-    networks:
-      monitoring_network:
-        ipv4_address: 172.28.0.20
+#  zabbix-agent:
+#    image: zabbix/zabbix-agent:trunk-ubuntu
+#    container_name: zabbix-agent
+#    ports:
+#      - '10050:10050'
+#    volumes:
+#      - "/etc/localtime:/etc/localtime:ro"
+#      - "/etc/timezone:/etc/timezone:ro"
+#    env_file:
+#      - .env
+#    environment:
+#      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
+#      TZ: ${TZ}
+#    restart: unless-stopped
+#    networks:
+#      monitoring_network:
+#        ipv4_address: 172.28.0.20
 
   zabbix-snmptraps:
     image: zabbix/zabbix-agent:trunk-ubuntu
@@ -105,6 +110,8 @@ services:
       - .env
     environment:
       TZ: ${TZ}
+    depends_on:
+      - mysql
     restart: unless-stopped
     networks:
       monitoring_network:
@@ -120,6 +127,9 @@ services:
       - "./grafana:/var/lib/grafana"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
+    depends_on:
+      - mysql 
+      - zabbix-server-mysql    
     restart: unless-stopped
     networks:
       monitoring_network:
