@@ -26,7 +26,7 @@ services:
     ]  
     restart: unless-stopped
     networks:
-      zabbix_network:
+      monitoring_network:
         ipv4_address: 172.28.0.5
 
   zabbix_frontend:
