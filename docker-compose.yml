@@ -1,66 +1,132 @@
 version: "3.8"
 
 services:
-  mariadb:
-    image: mariadb:10.7
-    container_name: mariadb-glpi
-    hostname: mariadb
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    hostname: mysql
+    ports:
+      - '28306:3306'
     volumes:
-      - "./mariadb:/var/lib/mysql"
-      - "./my.cnf:/etc/mysql/my.cnf:ro"
-      - "./logs/mariadb/error.log:/var/log/mysql/error.log:ro"
-      - "./logs/mariadb/mysql.log:/var/log/mysql/mysql.log:ro"
-      - "./logs/mariadb/mysql-slow.log:/var/log/mysql/mysql-slow.log:ro"
+      - "./mysql:/var/lib/mysql"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
       - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MARIADB_DATABASE}
-      MYSQL_USER: ${MARIADB_USER}
-      MYSQL_PASSWORD: ${MARIADB_PASSWORD}
-      TZ: ${TIMEZONE_GLOBAL}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ}
+    command: [
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8",
+      "--collation-server=utf8_bin"
+    ]  
     restart: unless-stopped
     networks:
-      glpi_network:
+      zabbix_network:
         ipv4_address: 172.28.0.5
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
 
-  glpi:
-    image: diouxx/glpi
-    container_name : glpi
-    hostname: glpi
+  zabbix_frontend:
+    image: zabbix/zabbix-web-nginx-mysql:trunk-ubuntu
+    container_name: zabbix_frontend
     ports:
-      - "28080:80"
+      - '80:8080'
+      - '443:8443'
     volumes:
-      - "./glpi/:/var/www/html/glpi"
-      - "./php:/etc/php/7.4/apache2"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
-      - "/etc/crontab:/etc/crontab:ro"
-    depends_on:
-      - mariadb
+    env_file:
+      - .env
     environment:
-      TZ: ${TIMEZONE_GLOBAL}
+      DB_SERVER_HOST: ${DB_SERVER_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
+      PHP_TZ: ${PHP_TZ}
+      TZ: ${TZ}
     restart: unless-stopped
     networks:
-      glpi_network:
+      monitoring_network:
         ipv4_address: 172.28.0.10
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
+
+  zabbix-server-mysql:
+    image: zabbix/zabbix-server-mysql:trunk-ubuntu
+    container_name: zabbix-server-mysql
+    ports:
+      - '10051:10051'
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    env_file:
+      - .env
+    environment:
+      DB_SERVER_HOST: ${DB_SERVER_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      ZBX_ENABLE_SNMP_TRAPS: ${ZBX_ENABLE_SNMP_TRAPS}
+      TZ: ${TZ}
+    restart: unless-stopped
+    networks:
+      monitoring_network:
+        ipv4_address: 172.28.0.15
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:trunk-ltsc2019
+    container_name: zabbix-agent
+    ports:
+      - '10050:10050'
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    env_file:
+      - .env
+    environment:
+      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
+      TZ: ${TZ}
+    restart: unless-stopped
+    networks:
+      monitoring_network:
+        ipv4_address: 172.28.0.20
+
+   zabbix-snmptraps:
+    image: zabbix/zabbix-agent:trunk-ltsc2019
+    container_name: zabbix-snmptraps
+    ports:
+      - '162:1162/udp'
+    volumes:
+      - "./zabbix/snmptraps:/var/lib/zabbix/snmptraps:rw"
+      - "./zabbix/mibs:/usr/share/snmp/mibs:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ}
+    restart: unless-stopped
+    networks:
+      monitoring_network:
+        ipv4_address: 172.28.0.25       
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./grafana:/var/lib/grafana"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+    networks:
+      monitoring_network:
+        ipv4_address: 172.28.0.30
 
 networks:
-  glpi_network:
+  monitoring_network:
     driver: bridge
     ipam:
       driver: default
