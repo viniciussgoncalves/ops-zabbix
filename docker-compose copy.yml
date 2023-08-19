@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:10.7
+    container_name: mariadb-glpi
+    hostname: mariadb
+    volumes:
+      - "./mariadb:/var/lib/mysql"
+      - "./my.cnf:/etc/mysql/my.cnf:ro"
+      - "./logs/mariadb/error.log:/var/log/mysql/error.log:ro"
+      - "./logs/mariadb/mysql.log:/var/log/mysql/mysql.log:ro"
+      - "./logs/mariadb/mysql-slow.log:/var/log/mysql/mysql-slow.log:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_DATABASE}
+      MYSQL_USER: ${MARIADB_USER}
+      MYSQL_PASSWORD: ${MARIADB_PASSWORD}
+      TZ: ${TIMEZONE_GLOBAL}
+    restart: unless-stopped
+    networks:
+      glpi_network:
+        ipv4_address: 172.28.0.5
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+
+  glpi:
+    image: diouxx/glpi
+    container_name : glpi
+    hostname: glpi
+    ports:
+      - "28080:80"
+    volumes:
+      - "./glpi/:/var/www/html/glpi"
+      - "./php:/etc/php/7.4/apache2"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/crontab:/etc/crontab:ro"
+    depends_on:
+      - mariadb
+    environment:
+      TZ: ${TIMEZONE_GLOBAL}
+    restart: unless-stopped
+    networks:
+      glpi_network:
+        ipv4_address: 172.28.0.10
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+
+networks:
+  glpi_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.28.0.0/16
