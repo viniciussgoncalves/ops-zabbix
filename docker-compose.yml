@@ -92,7 +92,7 @@ services:
         ipv4_address: 172.28.0.20
 
   zabbix-snmptraps:
-    image: zabbix/zabbix-agent:trunk-ltsc2019
+    image: zabbix/zabbix-agent:trunk-ubuntu
     container_name: zabbix-snmptraps
     ports:
       - '162:1162/udp'
