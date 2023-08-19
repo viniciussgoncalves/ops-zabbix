@@ -91,7 +91,7 @@ services:
       monitoring_network:
         ipv4_address: 172.28.0.20
 
-   zabbix-snmptraps:
+  zabbix-snmptraps:
     image: zabbix/zabbix-agent:trunk-ltsc2019
     container_name: zabbix-snmptraps
     ports:
