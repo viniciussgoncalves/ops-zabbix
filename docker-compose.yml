@@ -29,9 +29,9 @@ services:
       monitoring_network:
         ipv4_address: 172.28.0.5
 
-  zabbix_frontend:
+  zabbix-frontend:
     image: zabbix/zabbix-web-nginx-mysql:trunk-ubuntu
-    container_name: zabbix_frontend
+    container_name: zabbix-frontend
     ports:
       - '80:8080'
       - '443:8443'
