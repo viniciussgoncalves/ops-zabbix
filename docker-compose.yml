@@ -127,6 +127,8 @@ services:
       - "grafana_data:/var/lib/grafana"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
+    environment:
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
     depends_on:
       - mysql 
       - zabbix-server-mysql    
