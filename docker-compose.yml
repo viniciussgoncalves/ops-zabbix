@@ -54,9 +54,9 @@ services:
       monitoring_network:
         ipv4_address: 172.28.0.10
 
-  zabbix-server-mysql:
+  zabbix-server:
     image: zabbix/zabbix-server-mysql:trunk-ubuntu
-    container_name: zabbix-server-mysql
+    container_name: zabbix-server
     ports:
       - '10050:10050'
       - '10051:10051'
