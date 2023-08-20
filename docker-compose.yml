@@ -61,6 +61,13 @@ services:
       - '10050:10050'
       - '10051:10051'
     volumes:
+      - ".zabbix/zabbix-server/alertscripts:/usr/lib/zabbix/alertscripts"
+      - ".zabbix/zabbix-server/externalscripts:/usr/lib/zabbix/externalscripts"
+      - ".zabbix/zabbix-server/modules:/var/lib/zabbix/modules"
+      - ".zabbix/zabbix-server/enc:/var/lib/zabbix/enc"
+      - ".zabbix/zabbix-server/snmptraps:/var/lib/zabbix/snmptraps"
+      - ".zabbix/zabbix-server/mibs:/var/lib/zabbix/mibs"
+      - ".zabbix/zabbix-server/export:/var/lib/zabbix/export"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
@@ -102,8 +109,8 @@ services:
     ports:
       - '162:1162/udp'
     volumes:
-      - "./zabbix/snmptraps:/var/lib/zabbix/snmptraps:rw"
-      - "./zabbix/mibs:/usr/share/snmp/mibs:ro"
+      - "./zabbix/snmp/snmptraps:/var/lib/zabbix/snmptraps:rw"
+      - "./zabbix/snmp/mibs::/var/lib/zabbix/mibs:ro"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
