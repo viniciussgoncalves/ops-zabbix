@@ -150,7 +150,7 @@ services:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
     depends_on:
       - mysql 
-      - zabbix-server-mysql    
+      - zabbix-server    
     restart: unless-stopped
     networks:
       monitoring_network:
