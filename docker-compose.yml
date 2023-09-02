@@ -152,7 +152,8 @@ services:
     restart: unless-stopped
     networks:
       monitoring_network:
-        ipv4_address: 172.28.0.26  
+        ipv4_address: 172.28.0.26
+          
   grafana:
     image: grafana/grafana
     container_name: grafana
