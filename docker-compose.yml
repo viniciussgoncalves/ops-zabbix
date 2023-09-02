@@ -121,8 +121,8 @@ services:
     ports:
       - '162:1162/udp'
     volumes:
-      - "./zabbix/snmp/snmptraps:/var/lib/zabbix/snmptraps"
-      - "./zabbix/snmp/mibs::/var/lib/zabbix/mibs"
+      - "./zabbix/zabbix-snmptraps/snmptraps:/var/lib/zabbix/snmptraps"
+      - "./zabbix/zabbix-snmptraps/mibs::/var/lib/zabbix/mibs"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
