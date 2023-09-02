@@ -116,8 +116,8 @@ services:
 #        ipv4_address: 172.28.0.20
 
   zabbix-snmptraps:
-    image: zabbix/zabbix-agent
-    container_name: zabbix/zabbix-snmptraps
+    image: zabbix/zabbix-snmptraps
+    container_name: zabbix-snmptraps
     ports:
       - '162:1162/udp'
     volumes:
@@ -153,7 +153,7 @@ services:
     networks:
       monitoring_network:
         ipv4_address: 172.28.0.26
-          
+
   grafana:
     image: grafana/grafana
     container_name: grafana
