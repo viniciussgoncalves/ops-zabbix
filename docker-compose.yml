@@ -1,5 +1,17 @@
 version: "3.8"
 
+volumes:
+  mysql_data:
+  grafana_data:
+
+networks:
+  monitoring_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.28.0.0/16
+
 services:
   mysql:
     image: mysql:8.0
@@ -30,7 +42,7 @@ services:
         ipv4_address: 172.28.0.5
 
   zabbix-frontend:
-    image: zabbix/zabbix-web-nginx-mysql:trunk-ubuntu
+    image: zabbix/zabbix-web-nginx-mysql
     container_name: zabbix-frontend
     ports:
       - '80:8080'
@@ -55,19 +67,19 @@ services:
         ipv4_address: 172.28.0.10
 
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:trunk-ubuntu
+    image: zabbix/zabbix-server-mysql
     container_name: zabbix-server
     ports:
       - '10050:10050'
       - '10051:10051'
     volumes:
-      - ".zabbix/zabbix-server/alertscripts:/usr/lib/zabbix/alertscripts"
-      - ".zabbix/zabbix-server/externalscripts:/usr/lib/zabbix/externalscripts"
-      - ".zabbix/zabbix-server/modules:/var/lib/zabbix/modules"
-      - ".zabbix/zabbix-server/enc:/var/lib/zabbix/enc"
-      - ".zabbix/zabbix-server/snmptraps:/var/lib/zabbix/snmptraps"
-      - ".zabbix/zabbix-server/mibs:/var/lib/zabbix/mibs"
-      - ".zabbix/zabbix-server/export:/var/lib/zabbix/export"
+      - "./zabbix/zabbix-server/alertscripts:/usr/lib/zabbix/alertscripts"
+      - "./zabbix/zabbix-server/externalscripts:/usr/lib/zabbix/externalscripts"
+      - "./zabbix/zabbix-server/modules:/var/lib/zabbix/modules"
+      - "./zabbix/zabbix-server/enc:/var/lib/zabbix/enc"
+      - "./zabbix/zabbix-server/snmptraps:/var/lib/zabbix/snmptraps"
+      - "./zabbix/zabbix-server/mibs:/var/lib/zabbix/mibs"
+      - "./zabbix/zabbix-server/export:/var/lib/zabbix/export"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
@@ -86,7 +98,7 @@ services:
         ipv4_address: 172.28.0.15
 
 #  zabbix-agent:
-#    image: zabbix/zabbix-agent:trunk-ubuntu
+#    image: zabbix/zabbix-agent
 #    container_name: zabbix-agent
 #    ports:
 #      - '10050:10050'
@@ -104,13 +116,13 @@ services:
 #        ipv4_address: 172.28.0.20
 
   zabbix-snmptraps:
-    image: zabbix/zabbix-agent:trunk-ubuntu
+    image: zabbix/zabbix-agent
     container_name: zabbix-snmptraps
     ports:
       - '162:1162/udp'
     volumes:
-      - "./zabbix/snmp/snmptraps:/var/lib/zabbix/snmptraps:rw"
-      - "./zabbix/snmp/mibs::/var/lib/zabbix/mibs:ro"
+      - "./zabbix/snmp/snmptraps:/var/lib/zabbix/snmptraps"
+      - "./zabbix/snmp/mibs::/var/lib/zabbix/mibs"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     env_file:
@@ -143,15 +155,3 @@ services:
     networks:
       monitoring_network:
         ipv4_address: 172.28.0.30
-
-volumes:
-  mysql_data:
-  grafana_data:
-
-networks:
-  monitoring_network:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.28.0.0/16
