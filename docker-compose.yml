@@ -35,7 +35,7 @@ services:
       "--default-authentication-plugin=mysql_native_password",
       "--character-set-server=utf8",
       "--collation-server=utf8_bin"
-    ]  
+    ]
     restart: unless-stopped
     networks:
       monitoring_network:
@@ -45,8 +45,8 @@ services:
     image: zabbix/zabbix-web-nginx-mysql
     container_name: zabbix-frontend
     ports:
-      - '80:8080'
-      - '443:8443'
+      - '28080:8080'
+      - '28443:8443'
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
@@ -60,7 +60,7 @@ services:
       PHP_TZ: ${PHP_TZ}
       TZ: ${TZ}
     depends_on:
-      - mysql
+      - zabbix-server 
     restart: unless-stopped
     networks:
       monitoring_network:
@@ -89,31 +89,29 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       ZBX_ENABLE_SNMP_TRAPS: ${ZBX_ENABLE_SNMP_TRAPS}
+      ZBX_CACHESIZE: ${ZBX_CACHESIZE}
       TZ: ${TZ}
     depends_on:
-      - mysql      
+      - mysql 
     restart: unless-stopped
     networks:
       monitoring_network:
         ipv4_address: 172.28.0.15
 
-#  zabbix-agent:
-#    image: zabbix/zabbix-agent
-#    container_name: zabbix-agent
-#    ports:
-#      - '10050:10050'
-#    volumes:
-#      - "/etc/localtime:/etc/localtime:ro"
-#      - "/etc/timezone:/etc/timezone:ro"
-#    env_file:
-#      - .env
-#    environment:
-#      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
-#      TZ: ${TZ}
-#    restart: unless-stopped
-#    networks:
-#      monitoring_network:
-#        ipv4_address: 172.28.0.20
+  zabbix-agent:
+    image: zabbix/zabbix-agent2
+    container_name: zabbix-agent
+    privileged: true
+    volumes:
+      - "/dev/sdc:/dev/sdc"    
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    depends_on:
+      - zabbix-server
+    restart: unless-stopped
+    networks:
+      monitoring_network:
+        ipv4_address: 172.28.0.20
 
   zabbix-snmptraps:
     image: zabbix/zabbix-snmptraps
@@ -130,29 +128,11 @@ services:
     environment:
       TZ: ${TZ}
     depends_on:
-      - mysql
-    restart: unless-stopped
-    networks:
-      monitoring_network:
-        ipv4_address: 172.28.0.25       
-
-  zabbix-web-service:
-    image: zabbix/zabbix-web-service
-    container_name: zabbix-web-service
-    env_file:
-      - .env
-    environment:
-      ZBX_ALLOWEDIP: 172.28.0.15
-      TZ: ${TZ}
-    depends_on:
-      - mysql
       - zabbix-server
-    cap_add:
-      - SYS_ADMIN
     restart: unless-stopped
     networks:
       monitoring_network:
-        ipv4_address: 172.28.0.26
+        ipv4_address: 172.28.0.25
 
   grafana:
     image: grafana/grafana
@@ -167,9 +147,8 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
     depends_on:
-      - mysql 
-      - zabbix-server    
+      - zabbix-server
     restart: unless-stopped
     networks:
       monitoring_network:
-        ipv4_address: 172.28.0.30
+        ipv4_address: 172.28.0.35
