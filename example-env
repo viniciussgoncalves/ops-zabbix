@@ -1,0 +1,14 @@
+TZ="America/Sao_Paulo"
+
+#MYSQL 
+MYSQL_ROOT_PASSWORD="passdb"
+MYSQL_DATABASE="zabbix_db"
+MYSQL_USER="zabbix_usr"
+MYSQL_PASSWORD="zabbix"
+
+#Zabbix
+DB_SERVER_HOST="mysql"
+ZBX_SERVER_HOST="zabbix-server"
+PHP_TZ="America/Sao_Paulo"
+ZBX_ENABLE_SNMP_TRAPS="true"
+ZBX_CACHESIZE="64M"
